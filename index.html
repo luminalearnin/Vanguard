@@ -5,11 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vanguard Command</title>
 <link rel="manifest" href="manifest.json">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -95,6 +90,13 @@ details{font-size:.86rem;color:var(--mu)}summary{cursor:pointer;font-weight:700;
 </head>
 <body>
 <div class="wrap" id="app"><div class="card"><h1>Vanguard Command</h1><p>Loading…</p></div></div>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -367,7 +369,7 @@ window.addAdj=async()=>{
   catch(e){er.className="err";er.textContent="Could not save."}
 };
 window.saveSettings=async()=>{
-  const n=id=>Number($(id).value),v={quota:n("s_q"),dailyCap:n("s_c"),deadlineHour:n("s_d"),pitchCap:n("s_p"},targets:{research:n("s_tr"),sales:n("s_ts")}};
+  const n=id=>Number($(id).value),v={quota:n("s_q"),dailyCap:n("s_c"),deadlineHour:n("s_d"),pitchCap:n("s_p"),targets:{research:n("s_tr"),sales:n("s_ts")}};
   if(Object.values(v).some(x=>typeof x==="number"&&(isNaN(x)||x<=0))||isNaN(v.targets.research)||isNaN(v.targets.sales)||v.deadlineHour>23){$("se2").textContent="Enter valid positive numbers.";return}
   try{await setDoc(doc(db,"config","settings"),v);$("se2").className="err good";$("se2").textContent="Saved ✔"}catch(e){$("se2").className="err";$("se2").textContent="Could not save."}
 };
