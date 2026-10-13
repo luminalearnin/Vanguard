@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vanguard Command</title>
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -320,7 +321,7 @@ function adminBody(pend){
   if(A.tab==="board"){
     const rows=computeRows(cw,A.users,A.entries,A.adjs),ds=[0,1,2,3,4,5,6].map(n=>addD(cw,n));
     const published=A.results.find(r=>r.week===lw);
-    return`<div class="card"><div class="row"><h2>Live board · week of ${cw}</h2><span style="font-size:.78rem;color:var(--mu)">Employees cannot see this</span></div><div class="scroll"><table><thead><tr><th>Member</th><th>Role</th>${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<th>${d}</th>`).join("")}<th>Late</th><th>Points</th><th>Score</th><th>Last entry</th></tr></thead><tbody>${rows.map(r=>{const es=A.entries.filter(e=>e.uid===r.uid&&e.week===cw),last=es.reduce((m,e)=>Math.max(m,e.ms),0);return`<tr><td><b>${esc(r.name)}</b></td><td>${ROLES[r.role].label}</td>${ds.map(d=>`<td>${es.filter(e=>e.date===d).length}</td>`).join("")}<td>${es.filter(e=>e.hour>=S.deadlineHour).length}</td><td><b>${r.points}</b></td><td>${r.pct==null?"—":r.pct+"%"}</td><td>${last?fmtT(last):"—"}</td></tr>`}).join("")}</tbody></table></div></div>
+    return`<div class="card"><div class="row"><h2>Live board · week of ${cw}</h2><span style="font-size:.78rem;color:var(--mu)">Employees cannot see this</span></div><div class="scroll"><table><thead><tr><th>Member</th><th>Role</th>${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<th>${d}</th>`).join("")}<th>Late</th><th>Points</th><th>Score</th><th>Last entry</th></tr></thead><tbody>${rows.map(r=>{const es=A.entries.filter(e=>e.uid===r.uid&&e.week===cw),last=es.reduce((m,e)=>Math.max(m,e.ms),0);return`<tr><td><b>${esc(r.name)}</b></td><td>${ROLES[r.role].label}</td>${ds.map(d=>`<td>${es.filter(e=>e.date===d).length}</td>`).join("")}<td>${es.filter(e=>e.hour>=S.deadlineHour).length}</td><td><b>${r.points}</b></td><td>${r.pct==null?"—":r.pct+"\%"}</td><td>${last?fmtT(last):"—"}</td></tr>`}).join("")}</tbody></table></div></div>
     <div class="card"><h2>Publish results</h2><p>${published?"Last week ("+lw+") is already published.":"Last week ("+lw+") is not published yet."} Points update automatically from entries. Developer entries only count once you tap <b>Accept</b> in Review, and closed deals once you tap <b>Confirm</b>. Employees see nothing until you publish.</p><button onclick="publish('${lw}')">${published?"Re-publish":"Publish"} last week</button> <button class="sec" onclick="publish('${cw}')">Publish this week so far</button><div class="err" id="pe"></div></div>`;
   }
   if(A.tab==="review"){
