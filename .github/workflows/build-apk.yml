@@ -1,0 +1,166 @@
+name: Build Android app
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Install Android platform
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" || true
+      - name: Generate Android project
+        run: |
+          set -e
+          A=android
+          mkdir -p $A/app/src/main/java/com/vanguard/app $A/app/src/main/res/mipmap-xxhdpi $A/app/src/main/res/values
+          cp icon-192.png $A/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          cat > $A/settings.gradle <<'EOF'
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement { repositories { google(); mavenCentral() } }
+          rootProject.name = "Vanguard"
+          include ':app'
+          EOF
+          cat > $A/build.gradle <<'EOF'
+          plugins { id 'com.android.application' version '8.5.2' apply false }
+          EOF
+          cat > $A/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx2g
+          android.nonTransitiveRClass=true
+          EOF
+          cat > $A/app/build.gradle <<'EOF'
+          plugins { id 'com.android.application' }
+          android {
+            namespace 'com.vanguard.app'
+            compileSdk 34
+            defaultConfig {
+              applicationId "com.vanguard.app"
+              minSdk 24
+              targetSdk 34
+              versionCode 1
+              versionName "1.0"
+            }
+            compileOptions {
+              sourceCompatibility JavaVersion.VERSION_17
+              targetCompatibility JavaVersion.VERSION_17
+            }
+          }
+          EOF
+          cat > $A/app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+            <uses-permission android:name="android.permission.INTERNET"/>
+            <application
+              android:label="Vanguard"
+              android:icon="@mipmap/ic_launcher"
+              android:roundIcon="@mipmap/ic_launcher"
+              android:theme="@style/AppTheme"
+              android:hardwareAccelerated="true"
+              android:usesCleartextTraffic="false">
+              <activity
+                android:name=".MainActivity"
+                android:exported="true"
+                android:windowSoftInputMode="adjustResize"
+                android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout">
+                <intent-filter>
+                  <action android:name="android.intent.action.MAIN"/>
+                  <category android:name="android.intent.category.LAUNCHER"/>
+                </intent-filter>
+              </activity>
+            </application>
+          </manifest>
+          EOF
+          cat > $A/app/src/main/res/values/styles.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+            <color name="bg">#14161B</color>
+            <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
+              <item name="android:windowBackground">@color/bg</item>
+              <item name="android:statusBarColor">@color/bg</item>
+              <item name="android:navigationBarColor">@color/bg</item>
+            </style>
+          </resources>
+          EOF
+          cat > $A/app/src/main/java/com/vanguard/app/MainActivity.java <<'EOF'
+          package com.vanguard.app;
+
+          import android.app.Activity;
+          import android.content.Intent;
+          import android.graphics.Color;
+          import android.net.Uri;
+          import android.os.Bundle;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+
+          public class MainActivity extends Activity {
+            private static final String SITE = "https://luminalearnin.github.io/Vanguard/";
+            private static final String HOST = "luminalearnin.github.io";
+            private WebView web;
+
+            @Override
+            protected void onCreate(Bundle state) {
+              super.onCreate(state);
+              web = new WebView(this);
+              web.setBackgroundColor(Color.parseColor("#14161B"));
+              setContentView(web);
+              WebSettings st = web.getSettings();
+              st.setJavaScriptEnabled(true);
+              st.setDomStorageEnabled(true);
+              st.setDatabaseEnabled(true);
+              st.setAllowFileAccess(false);
+              st.setAllowContentAccess(false);
+              web.setWebChromeClient(new WebChromeClient());
+              web.setWebViewClient(new WebViewClient() {
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
+                  Uri u = req.getUrl();
+                  String h = u.getHost();
+                  if (h != null && h.equals(HOST)) return false;
+                  startActivity(new Intent(Intent.ACTION_VIEW, u));
+                  return true;
+                }
+              });
+              if (state != null) web.restoreState(state); else web.loadUrl(SITE);
+            }
+
+            @Override
+            protected void onSaveInstanceState(Bundle out) {
+              super.onSaveInstanceState(out);
+              web.saveState(out);
+            }
+
+            @Override
+            public void onBackPressed() {
+              if (web.canGoBack()) web.goBack(); else super.onBackPressed();
+            }
+
+            @Override
+            protected void onPause() { super.onPause(); web.onPause(); }
+
+            @Override
+            protected void onResume() { super.onResume(); web.onResume(); }
+          }
+          EOF
+      - name: Build APK
+        working-directory: android
+        run: gradle assembleDebug --no-daemon
+      - name: Name the file
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk Vanguard.apk
+      - name: Publish download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-v${{ github.run_number }}
+          name: Vanguard app v${{ github.run_number }}
+          files: Vanguard.apk
