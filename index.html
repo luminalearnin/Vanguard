@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vanguard Command</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#14161b">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vanguard">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js">
+<style>
+:root{--bg:#e7e0d3;--card:#f6f2ea;--bd:rgba(17,17,17,.10);--tx:#111;--mu:#6d665b;--bl:#2430ff;--gr:#0f9d6b;--rd:#d8341f;--ye:#b7791f;--disp:"Playfair Display","Didot","Bodoni 72",Georgia,serif;box-sizing:border-box}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:radial-gradient(ellipse at 50% -10%,#f6f1e6,transparent 62%);background-attachment:fixed;color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);-webkit-font-smoothing:antialiased}
+@keyframes floatSlow{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes spin{from{transform:rotateX(-20deg) rotateY(0)}to{transform:rotateX(-20deg) rotateY(360deg)}}
+@keyframes shadowPulse{0%,100%{transform:scaleX(1);opacity:.55}50%{transform:scaleX(.82);opacity:.35}}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.wrap{max-width:980px;margin:0 auto;padding:16px 16px 40px}
+.nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:4px 0 10px}
+.navtag{font-size:.68rem;letter-spacing:.22em;font-weight:700;color:var(--mu)}
+.navr{justify-self:end}.navr button{white-space:nowrap;padding:10px 16px}
+.brand{font-family:var(--disp);font-weight:900;font-size:1.7rem;letter-spacing:.08em;margin:0;line-height:1}
+.headline{font-family:var(--disp);font-weight:900;text-transform:uppercase;font-size:clamp(2rem,9vw,3.8rem);line-height:1.02;margin:8px 0 20px;letter-spacing:.01em}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:24px;padding:24px;margin-bottom:16px;box-shadow:0 18px 40px rgba(70,52,20,.12),inset 0 1px 0 #fff;transition:transform .35s ease,box-shadow .35s ease}
+@media(hover:hover){.card:hover{transform:translateY(-4px);box-shadow:0 30px 60px rgba(70,52,20,.18),inset 0 1px 0 #fff}}
+#admRoot .card:hover{transform:none}
+.card.dark{background:linear-gradient(160deg,#18181d,#0a0a0c);color:#f3efe6;border-color:rgba(255,255,255,.08);box-shadow:0 26px 54px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+.dark p,.dark label{color:#a9a396}.dark th{color:#a9a396}.dark td{border-bottom-color:rgba(255,255,255,.09)}
+.dark select{background:#1d1d23;color:#f3efe6;border-color:rgba(255,255,255,.18)}
+.rv{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+h1,h2,h3{margin:0 0 10px}h1{font-family:var(--disp);font-weight:900;font-size:clamp(1.6rem,6vw,2.2rem);text-transform:uppercase;letter-spacing:.02em}
+h2{font-family:var(--disp);font-weight:900;font-size:1.4rem;text-transform:uppercase;letter-spacing:.03em}h3{font-size:.95rem;font-weight:700}
+p{color:var(--mu);font-size:.9rem;line-height:1.55;margin:0 0 12px}
+label{display:block;font-size:.66rem;color:var(--mu);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.16em;font-weight:700}
+input,select,textarea{width:100%;padding:13px 14px;background:#fff;border:1px solid rgba(17,17,17,.14);color:#111;border-radius:14px;font:inherit;font-size:.95rem;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--bl);box-shadow:0 0 0 4px rgba(36,48,255,.14)}
+button{padding:12px 22px;background:#111;color:#fff;border:0;border-radius:999px;font-weight:700;cursor:pointer;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;box-shadow:0 10px 22px rgba(0,0,0,.22);transition:transform .2s,box-shadow .2s,background .2s}
+@media(hover:hover){button:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(0,0,0,.3);background:var(--bl)}}
+button:active{transform:scale(.97)}
+button.sec{background:transparent;color:#111;border:1.5px solid #111;box-shadow:none}
+.dark button.sec{color:#f3efe6;border-color:rgba(255,255,255,.6)}
+button.ok{background:var(--gr)}button.no{background:var(--rd)}
+button.sm{padding:6px 12px;font-size:.66rem;margin:2px}
+button:disabled{opacity:.5;cursor:default;transform:none}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse}
+th,td{padding:11px 10px;text-align:left;border-bottom:1px solid rgba(17,17,17,.08);font-size:.82rem;white-space:nowrap}
+th{color:var(--mu);font-size:.64rem;text-transform:uppercase;letter-spacing:.14em}td.w{white-space:normal;min-width:200px}
+@media(hover:hover){tbody tr:hover{background:rgba(36,48,255,.05)}}
+.banner{background:rgba(183,121,31,.12);border:1px solid rgba(183,121,31,.45);color:#7a4f10;padding:12px 16px;border-radius:16px;font-size:.84rem;font-weight:600;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid var(--bd);border-radius:20px;padding:16px 14px;box-shadow:0 16px 34px rgba(70,52,20,.14);animation:floatSlow 6s ease-in-out infinite}
+.stat:nth-child(2){animation-delay:-2s}.stat:nth-child(3){animation-delay:-4s}
+.stat b{display:block;font-family:var(--disp);font-weight:900;font-size:2.1rem;line-height:1.05}
+.stat span{font-size:.62rem;color:var(--mu);text-transform:uppercase;letter-spacing:.14em;font-weight:700}
+.bar{height:10px;background:rgba(17,17,17,.1);border-radius:8px;overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#2430ff,#7a5cff);transition:width .8s cubic-bezier(.2,.7,.2,1)}
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.64rem;font-weight:800;letter-spacing:.04em;background:rgba(17,17,17,.08);color:#555}
+.tag.g{background:rgba(15,157,107,.14);color:#0b7a53}.tag.y{background:rgba(183,121,31,.16);color:#8a5a12}.tag.r{background:rgba(216,52,31,.13);color:#b32612}
+.err{color:var(--rd);font-size:.84rem;margin-top:10px;min-height:1em}.good{color:var(--gr)}
+details{font-size:.86rem;color:var(--mu)}summary{cursor:pointer;font-weight:700;color:var(--tx);margin-bottom:8px}details li{margin:5px 0}
+.scene{min-height:calc(100vh - 32px);min-height:calc(100svh - 32px);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:18px 0}
+.scene>*{position:relative;z-index:1}
+.scene>.bgword{position:absolute;z-index:0;top:50%;left:50%;transform:translate(-50%,-52%);font-family:var(--disp);font-size:clamp(5rem,30vw,18rem);line-height:1;color:transparent;-webkit-text-stroke:1.5px rgba(17,17,17,.11);white-space:nowrap;pointer-events:none;user-select:none}
+.scene .card{width:100%;max-width:410px;margin:0 auto}
+.scene.sm .card{margin-bottom:0}
+.ctitle{margin-bottom:6px}
+.stage{perspective:720px;height:124px;width:100%;display:flex;align-items:center;justify-content:center;animation:floatSlow 6s ease-in-out infinite}
+.cube{width:90px;height:90px;position:relative;transform-style:preserve-3d;animation:spin 16s linear infinite}
+.cube i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-style:normal;font-family:var(--disp);font-size:46px;color:rgba(255,255,255,.9);background:linear-gradient(145deg,#2d2d34,#09090b 72%);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 0 24px rgba(36,48,255,.4)}
+.cube i:nth-child(1){transform:translateZ(45px)}.cube i:nth-child(2){transform:rotateY(90deg) translateZ(45px)}.cube i:nth-child(3){transform:rotateY(180deg) translateZ(45px)}.cube i:nth-child(4){transform:rotateY(-90deg) translateZ(45px)}.cube i:nth-child(5){transform:rotateX(90deg) translateZ(45px)}.cube i:nth-child(6){transform:rotateX(-90deg) translateZ(45px)}
+.shadow3d{width:96px;height:14px;margin:2px auto 14px;background:radial-gradient(ellipse,rgba(0,0,0,.4),transparent 70%);animation:shadowPulse 6s ease-in-out infinite}
+.cap{position:absolute;top:50%;transform:translateY(-50%);font-family:var(--disp);text-transform:uppercase;font-size:2rem;line-height:1.05;display:none;z-index:1}
+.cap small{display:block;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:.7rem;letter-spacing:.04em;text-transform:none;color:var(--mu);line-height:1.5;max-width:200px;margin-top:10px}
+.cap.l{left:3%}.cap.r{right:3%;text-align:right}.cap.r small{margin-left:auto}
+@media(min-width:1180px){.cap{display:block}}
+@media(max-width:560px){.card{padding:18px;border-radius:20px}.stat b{font-size:1.7rem}.brand{font-size:1.45rem}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+
+#gl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;display:none;pointer-events:none}
+html:has(body.dk){background:#04060d}
+body.dk{background:#04060d;color:#fff}
+body.dk .wrap{position:relative;z-index:1}
+.wrap:has(#land){max-width:none;padding:0}
+.land{--serif:var(--disp)}
+.lnav{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:calc(14px + env(safe-area-inset-top,0px)) 18px 22px;background:linear-gradient(#04060d 25%,transparent)}
+.lbrand{font-family:var(--serif);font-size:1.1rem;letter-spacing:.28em;font-weight:900}
+.lnav button{padding:9px 16px;font-size:.66rem;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.55);box-shadow:none}
+.ls{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:96px 22px 70px;position:relative}
+.ls.hero{align-items:center;text-align:center}
+.ls.l{align-items:flex-start}.ls.r{align-items:flex-end;text-align:right}.ls.c{align-items:center;text-align:center}
+.ltag,.lk{letter-spacing:.32em;font-size:.68rem;text-transform:uppercase;color:#7fb0ff;font-weight:700;margin:0 0 12px}
+.lh,.lh2{font-family:var(--serif);text-transform:uppercase;font-weight:900;line-height:.98;margin:0;letter-spacing:-.01em;text-shadow:0 4px 40px rgba(4,6,13,.85)}
+.lh{font-size:clamp(2.5rem,10.5vw,6.4rem)}.lh2{font-size:clamp(2.1rem,8.4vw,5rem)}
+.lnum{font-family:var(--serif);font-size:clamp(4.2rem,17vw,9.5rem);font-weight:900;color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.38);line-height:.95}
+.lp{max-width:400px;color:#b9c5de;font-size:1rem;line-height:1.65;margin:16px 0 0;text-shadow:0 2px 20px rgba(4,6,13,.9)}
+.scrollcue{margin-top:20px;font-size:.62rem;letter-spacing:.32em;text-transform:uppercase;color:#7d8bad;animation:floatSlow 3s ease-in-out infinite}
+.rvh{opacity:0;transform:translateY(36px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.rvh.in{opacity:1;transform:none}
+.land .card{background:rgba(8,12,26,.58);border:1px solid rgba(255,255,255,.14);color:#fff;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 30px 70px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.12);text-align:left}
+.land .card:hover{transform:none}
+.land .ls.hero .card{margin:22px auto 0}
+.land .ctitle{color:#fff}
+.land p{color:#a9b6d3}.land label{color:#9fb0cf}
+.land input,.land select{background:rgba(255,255,255,.07);color:#fff;border-color:rgba(255,255,255,.2)}
+.land input::placeholder{color:#7d8bad}
+.land select option{background:#0b1020;color:#fff}
+.land input:focus,.land select:focus{border-color:#7fb0ff;box-shadow:0 0 0 4px rgba(127,176,255,.22)}
+.land .card button{background:#fff;color:#05070f;white-space:nowrap;padding:12px 16px;font-size:.7rem}
+.land .card button.sec{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
+.land .err{color:#ff8a7a}
+.land .cta{background:#fff;color:#05070f;margin-top:22px}
+@media(max-width:899px){.ls.r{align-items:flex-start;text-align:left}}
+@media(prefers-reduced-motion:reduce){.rvh{opacity:1;transform:none}}
+
+body.dk{--acc:#4aa3ff;--card:rgba(8,12,26,.6);--bd:rgba(255,255,255,.12);--tx:#f4f6ff;--mu:#9aa8c7}
+body.dk .card{background:rgba(8,12,26,.6);border-color:rgba(255,255,255,.12);color:#f4f6ff;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1)}
+@media(hover:hover){body.dk .card:hover{box-shadow:0 30px 70px rgba(0,0,0,.6),0 0 0 1px color-mix(in srgb,var(--acc) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.14)}}
+body.dk .card.dark{background:rgba(2,4,12,.78);border-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+body.dk .navtag{color:var(--acc)}
+body.dk .headline{color:#fff;text-shadow:0 4px 40px rgba(4,6,13,.9)}
+body.dk input,body.dk select,body.dk textarea{background:rgba(255,255,255,.07);color:#fff;border-color:rgba(255,255,255,.2)}
+body.dk input::placeholder,body.dk textarea::placeholder{color:#7d8bad}
+body.dk select option{background:#0b1020;color:#fff}
+body.dk input:focus,body.dk select:focus,body.dk textarea:focus{border-color:var(--acc);box-shadow:0 0 0 4px color-mix(in srgb,var(--acc) 25%,transparent)}
+body.dk button{background:#fff;color:#05070f;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+@media(hover:hover){body.dk button:hover{background:var(--acc);color:#05070f}}
+body.dk button.sec{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.5);box-shadow:none}
+body.dk button.ok{background:#10b981;color:#fff}body.dk button.no{background:#ef4444;color:#fff}
+body.dk .stat{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);box-shadow:0 16px 34px rgba(0,0,0,.4)}
+body.dk .stat b{color:#fff;text-shadow:0 0 26px color-mix(in srgb,var(--acc) 70%,transparent)}
+body.dk th,body.dk td{border-bottom-color:rgba(255,255,255,.09)}
+@media(hover:hover){body.dk tbody tr:hover{background:color-mix(in srgb,var(--acc) 10%,transparent)}}
+body.dk .banner{background:rgba(255,180,84,.1);border-color:rgba(255,180,84,.4);color:#ffcf8a}
+body.dk .tag{background:rgba(255,255,255,.1);color:#c3cde4}body.dk .tag.g{background:rgba(52,211,153,.16);color:#6ee7b7}body.dk .tag.y{background:rgba(252,211,77,.16);color:#fcd34d}body.dk .tag.r{background:rgba(248,113,113,.16);color:#fca5a5}
+body.dk .bar{background:rgba(255,255,255,.1)}
+body.dk .bar i{background:linear-gradient(90deg,var(--acc),#fff)}
+body.dk .err{color:#ff8a7a}body.dk .good{color:#6ee7b7}
+body.dk summary{color:#fff}
+#inst{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;z-index:30;padding:11px 18px;background:#fff;color:#05070f;border:0;border-radius:999px;font-weight:800;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+
+html{overscroll-behavior:none}
+*{-webkit-tap-highlight-color:transparent}
+@media (display-mode:standalone){body{-webkit-user-select:none;user-select:none}input,textarea,td,select{-webkit-user-select:text;user-select:text}}
+.getapp{margin-top:14px;text-align:center;min-height:0}.apkbtn{display:inline-block;padding:12px 22px;border:1.5px solid rgba(255,255,255,.55);border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase}.apkbtn:active{transform:scale(.97)}.getapp p{font-size:.8rem;margin:0}
+body:has(#land) #inst{display:none}
+body:has(#admRoot) #inst{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+@media(max-width:700px){
+#admRoot{padding-bottom:96px}
+#admRoot .tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;margin:0;padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(8,10,16,.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,.12);flex-wrap:nowrap;overflow-x:auto;gap:6px}
+#admRoot .tabs button{flex:1 0 auto;padding:10px 12px;font-size:.62rem;white-space:nowrap}
+}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div class="wrap" id="app"><div class="card"><h1>Vanguard Command</h1><p>Loading…</p></div></div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,addDoc,updateDoc,collection,query,where,orderBy,limit,onSnapshot,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyCEASnUp9m6dwSZluQmVPCBN21Jj4GcW0k",authDomain:"vanguard-command-b498c.firebaseapp.com",projectId:"vanguard-command-b498c",storageBucket:"vanguard-command-b498c.firebasestorage.app",messagingSenderId:"677985130363",appId:"1:677985130363:web:9798c202b857c770db0fde"};
+const fb=initializeApp(firebaseConfig),auth=getAuth(fb),db=getFirestore(fb);
+const ADMIN_EMAIL="ceo@vanguard-admin.app",DOMAIN="@staff.vanguard-command.app",IST=19800000;
+const DEF={quota:25,dailyCap:40,deadlineHour:17,pitchCap:15,targets:{research:125,sales:60}};
+let S=JSON.parse(JSON.stringify(DEF));
+
+const ROLES={
+research:{label:"Lead Research",types:{lead:{label:"Verified lead",fields:[["business","Business name","text",1],["owner","Owner / manager","text",0],["contact","Phone / email (verified)","text",1],["website","Website status (None or broken URL)","text",1],["pain","Pain point note","textarea",1]]}}},
+sales:{label:"Sales & Closing",types:{pitch:{label:"Qualified pitch",fields:[["business","Business / client","text",1],["channel","Channel","select",1,["Call","Email","WhatsApp"]],["notes","Notes","textarea",0]]},call_booked:{label:"Discovery call booked",fields:[["business","Business / client","text",1],["when","Call date & time","text",1],["notes","Notes","textarea",0]]},client_closed:{label:"Paying client closed",fields:[["business","Client","text",1],["value","Deal value","text",0],["notes","Notes","textarea",0]]}}},
+dev:{label:"Web Development",types:{site:{label:"Website delivered",fields:[["business","Client","text",1],["url","Live URL","text",1],["deadline","Agreed deadline","date",1],["notes","Notes","textarea",0]]}}}
+};
+const $=i=>document.getElementById(i);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const slug=n=>n.toLowerCase().replace(/[^a-z0-9]+/g,".").replace(/^\.+|\.+$/g,"");
+const istOf=ms=>{const d=new Date(ms+IST);return{date:d.toISOString().slice(0,10),hour:d.getUTCHours()}};
+const weekOf=ms=>{const d=new Date(ms+IST);d.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));return d.toISOString().slice(0,10)};
+const addD=(s,n)=>{const d=new Date(s+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
+const weekEndMs=w=>Date.parse(w+"T00:00:00Z")-IST+7*864e5;
+const fmtT=ms=>new Date(ms+IST).toISOString().replace("T"," ").slice(0,19)+" IST";
+const mapE=d=>{const x=d.data({serverTimestamps:"estimate"});const ms=x.ts?x.ts.toMillis():Date.now();const t=istOf(ms);return{id:d.id,uid:x.uid,name:x.name,role:x.role,type:x.type,data:x.data||{},ms:ms,date:t.date,hour:t.hour,week:weekOf(ms),status:x.status,converted:!!x.converted,bugs:x.bugs||0,deadline:x.deadline||""}};
+const mapA=d=>{const x=d.data({serverTimestamps:"estimate"});return Object.assign({id:d.id},x,{ms:x.ts?x.ts.toMillis():Date.now()})};
+const view=h=>{$("app").innerHTML=h.indexOf('<div class="card"')===0?'<div class="scene sm">'+h+'</div>':h};
+const head=(sub,btn)=>`<div class="nav"><span class="navtag">COMMAND</span><h1 class="brand">VANGUARD</h1><div class="navr">${btn||""}</div></div><div class="headline">${sub}</div>`;
+let cur=null,prof=null,unsubs=[],installEv=null;
+document.body.classList.add("dk");
+const clearSubs=()=>{unsubs.forEach(f=>f());unsubs=[]};
+function reveal(root){if(!root||!("IntersectionObserver" in window))return;const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.06});Array.prototype.forEach.call(root.children,el=>{if(el.classList.contains("card")||el.classList.contains("stats")){el.classList.add("rv");io.observe(el)}})}
+window.logout=()=>signOut(auth);
+
+/* ---------- Scoring ---------- */
+function scoreUser(role,es,adjs,closedCount){
+  let pts=0;const days={};
+  es.forEach(e=>{(days[e.date]=days[e.date]||[]).push(e)});
+  Object.keys(days).forEach(d=>{
+    const L=days[d];
+    if(role==="research"){
+      let on=0,late=0,wrong=0,conv=0;
+      L.forEach(e=>{if(e.type!=="lead")return;if(e.status==="wrong")wrong++;else if(e.hour<S.deadlineHour)on++;else late++;if(e.converted&&e.status!=="wrong")conv++});
+      const cOn=Math.min(on,S.dailyCap),cLate=Math.min(late,Math.max(0,S.dailyCap-cOn));
+      pts+=cOn+cLate*.5-wrong*2+(on>=S.quota?5:0)+conv*10;
+    }else if(role==="sales"){
+      let pitch=0;
+      L.forEach(e=>{
+        if(e.type==="pitch"){if(e.status==="fake")pts-=5;else pitch++}
+        else if(e.type==="call_booked"){pts+=(e.status==="fake"||e.status==="missed")?-5:3}
+        else if(e.type==="client_closed"){if(e.status==="confirmed")pts+=25;else if(e.status==="cancelled")pts-=15}
+      });
+      pts+=Math.min(pitch,S.pitchCap);
+    }else{
+      L.forEach(e=>{if(e.type!=="site"||e.status!=="accepted")return;
+        const onTime=!e.deadline||e.date<=e.deadline;pts+=(onTime?20:10)-5*e.bugs});
+    }
+  });
+  adjs.forEach(a=>{pts+=Number(a.points)||0});
+  pts=Math.max(0,Math.round(pts*10)/10);
+  const target=role==="dev"?(closedCount?closedCount*20:null):(S.targets[role]||null);
+  return{points:pts,target:target,pct:target?Math.min(120,Math.round(pts/target*100)):null};
+}
+function computeRows(week,users,entries,adjs){
+  const closed=entries.filter(e=>e.week===week&&e.type==="client_closed"&&e.status==="confirmed").length;
+  return users.filter(u=>u.status==="approved").map(u=>{
+    const r=scoreUser(u.role,entries.filter(e=>e.uid===u.id&&e.week===week),adjs.filter(a=>a.uid===u.id&&a.week===week),closed);
+    return{uid:u.id,name:u.name,role:u.role,points:r.points,target:r.target,pct:r.pct,n:entries.filter(e=>e.uid===u.id&&e.week===week).length};
+  });
+}
+function rankHtml(rows,meId){
+  let h="";
+  Object.keys(ROLES).forEach(r=>{
+    const g=rows.filter(x=>x.role===r).sort((a,b)=>b.points-a.points);if(!g.length)return;
+    h+=`<h3 style="margin-top:14px">${ROLES[r].label}</h3><div class="scroll"><table><thead><tr><th>#</th><th>Name</th><th>Points</th><th>Target</th><th>Score</th></tr></thead><tbody>${g.map((x,i)=>`<tr><td>${i===0?"🏆":i+1}</td><td><b>${esc(x.name)}${x.uid===meId?" (you)":""}</b></td><td>${x.points}</td><td>${x.target==null?"—":x.target}</td><td>${x.pct==null?"—":x.pct+"%"}</td></tr>`).join("")}</tbody></table></div>`;
+  });
+  return h||"<p>No results yet.</p>";
+}
+
+/* ---------- Auth screens ---------- */
+let mode="login";
+/* ---------- Landing (cinematic 3D) ---------- */
+const L={on:false,inited:false,failed:false,raf:0,frame:null,mode:"land",shape:0,col:0x4aa3ff,sc:1};
+const THEME={research:{shape:1,col:0xa78bfa,hex:"#a78bfa"},sales:{shape:2,col:0x2dd4bf,hex:"#2dd4bf"},dev:{shape:3,col:0xffb454,hex:"#ffb454"},admin:{shape:0,col:0xffd76a,hex:"#ffd76a"},base:{shape:0,col:0x4aa3ff,hex:"#4aa3ff"}};
+function setTheme(k){const t=THEME[k]||THEME.base;document.body.style.setProperty("--acc",t.hex);startScene("app",t.shape,t.col)}
+function landingHTML(){
+  const sec=(cls,n,k,t,txt)=>`<section class="ls ${cls}"><div class="lnum rvh">${n}</div><div class="lk rvh">${k}</div><h2 class="lh2 rvh">${t}</h2><p class="lp rvh">${txt}</p></section>`;
+  return`<div id="land" class="land"><div class="lnav"><span class="lbrand">VANGUARD</span><button onclick="window.scrollTo({top:0,behavior:'smooth'})">Sign in</button></div>
+  <section class="ls hero"><p class="ltag">Team portal · invite only</p><h1 class="lh">Lead. Close.<br>Deliver.</h1><div class="card" id="authCard"></div><div class="getapp" id="getapp"></div><div class="scrollcue">Scroll ↓</div></section>
+  ${sec("r","01","Research","Find the leads<br>that matter","Lead Intelligence turns maps and directories into a clean pipeline: verified businesses, accurate contacts, every single day.")}
+  ${sec("l","02","Sales","Turn calls<br>into clients","Sales takes every verified lead through pitch, discovery call and close, then hands the deal to the builders.")}
+  ${sec("r","03","Build","Ship sites<br>that work","Web Development delivers each closed deal as a fast, bug-free website, on time and ready to launch.")}
+  <section class="ls c"><div class="lnum rvh">04</div><div class="lk rvh">Score</div><h2 class="lh2 rvh">Fair<br>by design</h2><p class="lp rvh">Every role is scored on what it controls. Results are published weekly so the best work gets seen.</p><button class="cta rvh" onclick="window.scrollTo({top:0,behavior:'smooth'})">Sign in</button></section></div>`;
+}
+function revealLand(){
+  if(!("IntersectionObserver" in window))return;
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.15});
+  document.querySelectorAll("#land .lnum,#land .lk,#land .lh2,#land .lp,#land .cta").forEach(el=>{el.classList.add("rvh");io.observe(el)});
+}
+async function startScene(mode,shape,col){
+  L.on=true;L.mode=mode||"land";if(shape!=null)L.shape=shape;if(col!=null)L.col=col;const cv=$("gl");
+  if(L.failed||(navigator.connection&&navigator.connection.saveData))return;
+  if(L.inited){cv.style.display="block";if(!L.raf&&L.frame)L.raf=requestAnimationFrame(L.frame);return}
+  L.inited=true;
+  try{
+    let T;
+    try{T=await import("https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.min.js")}
+    catch(e){T=await import("https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js")}
+    if(!L.on){L.inited=false;return}
+    const small=innerWidth<700,N=small?1800:3200,SH=5;
+    const R=new T.WebGLRenderer({canvas:cv,antialias:false,alpha:true,powerPreference:"low-power"});
+    R.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+    const scene=new T.Scene(),cam=new T.PerspectiveCamera(50,1,.1,60);cam.position.z=5.4;
+    const rnd=()=>Math.random()-.5;
+    const S=[];for(let k=0;k<SH;k++)S.push(new Float32Array(N*3));
+    const GA=2.399963;
+    for(let i=0;i<N;i++){
+      const o=i*3;
+      // 0 globe
+      let y=1-(i/(N-1))*2,r=Math.sqrt(1-y*y),t=i*GA;
+      S[0][o]=Math.cos(t)*r*1.75+rnd()*.03;S[0][o+1]=y*1.75+rnd()*.03;S[0][o+2]=Math.sin(t)*r*1.75+rnd()*.03;
+      // 1 spiral galaxy
+      const arm=i%3,rr=Math.sqrt(Math.random())*2.5,ang=rr*2.1+arm*2.0944+rnd()*.55,gy=rnd()*.22,gx=Math.cos(ang)*rr,gz=Math.sin(ang)*rr,c=Math.cos(.95),sn=Math.sin(.95);
+      S[1][o]=gx;S[1][o+1]=gy*c-gz*sn;S[1][o+2]=gy*sn+gz*c;
+      // 2 torus knot
+      const u=i/N*Math.PI*2,kr=Math.cos(3*u)+2;
+      S[2][o]=kr*Math.cos(2*u)*.62+rnd()*.16;S[2][o+1]=kr*Math.sin(2*u)*.62+rnd()*.16;S[2][o+2]=-Math.sin(3*u)*.62*1.2+rnd()*.16;
+      // 3 cube lattice
+      const g=Math.ceil(Math.cbrt(N));
+      S[3][o]=((i%g)/(g-1)-.5)*2.7+rnd()*.03;S[3][o+1]=((Math.floor(i/g)%g)/(g-1)-.5)*2.7+rnd()*.03;S[3][o+2]=((Math.floor(i/g/g))/(g-1)-.5)*2.7+rnd()*.03;
+      // 4 double helix
+      const hy=(i/N-.5)*4.2,ha=i/N*Math.PI*9+(i%2)*Math.PI;
+      S[4][o]=Math.cos(ha)*.95+rnd()*.1;S[4][o+1]=hy;S[4][o+2]=Math.sin(ha)*.95+rnd()*.1;
+    }
+    const pos=new Float32Array(S[0]),geo=new T.BufferGeometry();
+    geo.setAttribute("position",new T.BufferAttribute(pos,3));
+    const sp=document.createElement("canvas");sp.width=sp.height=64;const sg=sp.getContext("2d"),gr=sg.createRadialGradient(32,32,0,32,32,32);
+    gr.addColorStop(0,"rgba(255,255,255,1)");gr.addColorStop(.3,"rgba(255,255,255,.55)");gr.addColorStop(1,"rgba(255,255,255,0)");sg.fillStyle=gr;sg.fillRect(0,0,64,64);
+    const mat=new T.PointsMaterial({size:small?.085:.07,map:new T.CanvasTexture(sp),transparent:true,depthWrite:false,blending:T.AdditiveBlending,color:0x4aa3ff,opacity:.92});
+    const pts=new T.Points(geo,mat);pts.frustumCulled=false;scene.add(pts);
+    const COL=[0x4aa3ff,0xa78bfa,0x2dd4bf,0xffb454,0x6ee7a1].map(h=>new T.Color(h)),tmp=new T.Color();
+    const OX=[0,-1.5,1.5,-1.5,0];
+    let mx=0,my=0;
+    const resize=()=>{R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()};
+    resize();addEventListener("resize",resize);
+    addEventListener("pointermove",e=>{mx=e.clientX/innerWidth*2-1;my=e.clientY/innerHeight*2-1},{passive:true});
+    addEventListener("touchmove",e=>{const t=e.touches[0];if(t){mx=t.clientX/innerWidth*2-1;my=t.clientY/innerHeight*2-1}},{passive:true});
+    let t0=performance.now();
+    L.frame=function(){
+      if(!L.on){L.raf=0;return}
+      L.raf=requestAnimationFrame(L.frame);
+      if(document.hidden)return;
+      try{
+        const now=performance.now(),dt=Math.min(.05,(now-t0)/1000);t0=now;
+        const wide=innerWidth>=900;let A,B,e=0,ox,oy,sc,op;
+        if(L.mode==="land"){
+          const sec=Math.max(0,Math.min(SH-1,scrollY/Math.max(1,innerHeight)));
+          const a=Math.min(SH-2,Math.floor(sec)),b=a+1,f=sec-a;e=f*f*(3-2*f);A=S[a];B=S[b];
+          tmp.copy(COL[a]).lerp(COL[b],e);
+          ox=(OX[a]+(OX[b]-OX[a])*e)*(wide?1:0);oy=0;sc=small?.72:(innerWidth<900?.85:1);op=.92;
+        }else{
+          A=B=S[Math.max(0,Math.min(SH-1,L.shape))];tmp.set(L.col);
+          ox=wide?2.7:.55;oy=wide?.1:1.5;sc=wide?.85:.5;op=.55;
+        }
+        for(let i=0;i<N*3;i++){pos[i]+=(A[i]+(B[i]-A[i])*e-pos[i])*.1}
+        geo.attributes.position.needsUpdate=true;
+        mat.color.lerp(tmp,.12);
+        pts.position.x+=(ox-pts.position.x)*.06;
+        pts.position.y+=(oy+Math.sin(now*.0007)*.1-pts.position.y)*.08;
+        L.sc+=(sc-L.sc)*.08;pts.scale.setScalar(L.sc);
+        mat.opacity+=(op-mat.opacity)*.06;
+        pts.rotation.y+=dt*.3;
+        pts.rotation.x+=(my*.4-pts.rotation.x)*.04;
+        pts.rotation.z+=(mx*-.2-pts.rotation.z)*.04;
+        R.render(scene,cam);
+      }catch(err){L.on=false;cv.style.display="none"}
+    };
+    cv.style.display="block";L.raf=requestAnimationFrame(L.frame);
+  }catch(e){L.failed=true;L.inited=false;cv.style.display="none"}
+}
+
+function authScreen(msg){
+  const reg=mode==="register";
+  if(!$("land")){view(landingHTML());document.body.classList.add("dk");revealLand();updateGetApp();document.body.style.setProperty("--acc","#4aa3ff");startScene("land")}
+  $("authCard").innerHTML=`<h2 class="ctitle">${reg?"Request access":"Welcome back"}</h2><p>${reg?"Create your account with your real full name. Vijay approves every account; unrecognised names are declined.":"Sign in with your full name and password."}</p>
+  <label>Full name</label><input id="an" autocomplete="name" placeholder="Enter your full name">
+  <label>Password</label><input id="ap" type="password" autocomplete="${reg?"new-password":"current-password"}" placeholder="At least 6 characters">
+  ${reg?`<label>Confirm password</label><input id="ap2" type="password" autocomplete="new-password"><label>Your role</label><select id="ar">${Object.keys(ROLES).map(k=>`<option value="${k}">${ROLES[k].label}</option>`).join("")}</select>`:""}
+  <div style="margin-top:16px;display:flex;gap:8px"><button id="ab" onclick="${reg?"doRegister()":"doLogin()"}">${reg?"Request access":"Sign in"}</button><button class="sec" onclick="setMode('${reg?"login":"register"}')">${reg?"I have an account":"New here? Register"}</button></div>
+  <div class="err" id="ae">${esc(msg||"")}</div>`;
+}
+window.setMode=m=>{mode=m;authScreen()};
+const authErr=e=>{const c=e&&e.code||"";
+  if(c==="auth/email-already-in-use")return"This name is already registered. Sign in instead.";
+  if(c==="auth/invalid-credential"||c==="auth/wrong-password"||c==="auth/user-not-found"||c==="auth/invalid-login-credentials")return"Incorrect name or password.";
+  if(c==="auth/weak-password")return"Password must be at least 6 characters.";
+  if(c==="auth/too-many-requests")return"Too many attempts. Wait a few minutes and retry.";
+  if(c==="auth/network-request-failed")return"No internet connection.";
+  return"Something went wrong. Please try again."};
+window.doLogin=async()=>{
+  const n=$("an").value.trim(),p=$("ap").value;
+  if(!n||!p){$("ae").textContent="Enter your name and password.";return}
+  $("ab").disabled=true;
+  const s=slug(n),email=s==="pram"?ADMIN_EMAIL:s+DOMAIN;
+  try{await signInWithEmailAndPassword(auth,email,p)}catch(e){$("ae").textContent=authErr(e);$("ab").disabled=false}
+};
+window.doRegister=async()=>{
+  const n=$("an").value.trim().replace(/\s+/g," "),p=$("ap").value,p2=$("ap2").value,r=$("ar").value,s=slug(n),er=$("ae");
+  if(n.split(" ").length<2||!/^[A-Za-z][A-Za-z .'-]+$/.test(n)||n.length>60){er.textContent="Enter your real first and last name (letters only).";return}
+  if(["pram","vijay","admin","ceo"].includes(s)){er.textContent="This name is reserved.";return}
+  if(p.length<6){er.textContent="Password must be at least 6 characters.";return}
+  if(p!==p2){er.textContent="Passwords do not match.";return}
+  $("ab").disabled=true;
+  try{
+    const c=await createUserWithEmailAndPassword(auth,s+DOMAIN,p);
+    await setDoc(doc(db,"users",c.user.uid),{name:n,role:r,status:"pending",createdAt:serverTimestamp()});
+  }catch(e){er.textContent=authErr(e);$("ab").disabled=false}
+};
+
+onAuthStateChanged(auth,async u=>{
+  clearSubs();cur=u;prof=null;
+  if(!u){authScreen();return}
+  setTheme("base");window.scrollTo(0,0);
+  if(u.email===ADMIN_EMAIL){startAdmin();return}
+  view('<div class="card"><p>Loading…</p></div>');
+  unsubs.push(onSnapshot(doc(db,"users",u.uid),s=>{
+    if(!s.exists()){view(`<div class="card"><h1>Setting up…</h1><p>If this takes more than a few seconds, sign out and register again.</p><button class="sec" onclick="logout()">Sign out</button></div>`);return}
+    prof=s.data();
+    if(prof.status==="approved"){if(!$("empRoot"))startEmployee()}
+    else if(prof.status==="rejected")view(`<div class="card"><h1>Access denied</h1><p>Your request was not approved. Contact Vijay.</p><button class="sec" onclick="logout()">Sign out</button></div>`);
+    else view(`<div class="card"><h1>Request sent</h1><p>Hi ${esc(prof.name)}, your account is pending approval by Vijay. This page updates automatically once approved.</p><button class="sec" onclick="logout()">Sign out</button></div>`);
+  },()=>view('<div class="card"><p>Could not load. Check your connection and refresh.</p></div>')));
+});
+
+/* ---------- Employee ---------- */
+let E={entries:[],adjs:[],results:[],ctype:null};
+function startEmployee(){
+  setTheme(prof.role);
+  const R=ROLES[prof.role],types=Object.keys(R.types);E.ctype=types[0];
+  view(`<div id="empRoot">${head(esc(prof.name)+" · "+R.label,'<button class="sec" onclick="logout()">Sign out</button>')}
+  <div class="banner" id="eb"></div>
+  <div class="stats"><div class="stat"><b id="sT">–</b><span>Today</span></div><div class="stat"><b id="sW">–</b><span>This week</span></div><div class="stat"><b id="sL">–</b><span>After 5 PM</span></div></div>
+  <div class="card" id="qCard" style="padding:14px;display:none"><div class="row"><b>Daily quota (before 5 PM IST)</b><span id="qt" style="font-size:.85rem;color:var(--mu)"></span></div><div class="bar"><i id="qb" style="width:0"></i></div></div>
+  <div class="card"><h2>Submit entry</h2>${types.length>1?`<label>Type</label><select id="etype" onchange="setType(this.value)">${types.map(t=>`<option value="${t}">${R.types[t].label}</option>`).join("")}</select>`:""}<div id="ff"></div><div style="margin-top:16px"><button id="sb" onclick="submitEntry()">Submit</button></div><div class="err" id="se"></div></div>
+  <div class="card dark"><h2>Weekly results</h2><div id="resSel"></div><div class="scroll" id="res"><p>Results appear after each week ends.</p></div></div>
+  <div class="card"><h2>My recent entries</h2><div class="scroll" id="hist"></div></div>
+  <div class="card" id="adjCard" style="display:none"><h2>Score adjustments</h2><div class="scroll" id="adjs"></div></div>
+  <div class="card"><details><summary>How scoring works</summary><ul style="padding-left:18px;margin:0">${scoringHelp(prof.role)}<li>Weekly score = points ÷ your weekly target (max 120%). Results are published each Monday (IST).</li><li>Every penalty needs a reason and you can dispute it within 48 hours.</li></ul></details></div></div>`);
+  setType(E.ctype);reveal($("empRoot"));
+  unsubs.push(onSnapshot(query(collection(db,"entries"),where("uid","==",cur.uid)),s=>{E.entries=s.docs.map(mapE);empUpdate()}));
+  unsubs.push(onSnapshot(query(collection(db,"adjustments"),where("uid","==",cur.uid)),s=>{E.adjs=s.docs.map(mapA).sort((a,b)=>b.ms-a.ms);empUpdate()}));
+  unsubs.push(onSnapshot(query(collection(db,"results"),orderBy("week","desc"),limit(8)),s=>{E.results=s.docs.map(d=>d.data());empUpdate()}));
+  unsubs.push(onSnapshot(doc(db,"config","settings"),s=>{if(s.exists())S=Object.assign(JSON.parse(JSON.stringify(DEF)),s.data());empUpdate()}));
+}
+function scoringHelp(r){
+  if(r==="research")return`<li>+1 per lead submitted before ${S.deadlineHour}:00 IST, +0.5 after.</li><li>−2 for each lead found to have wrong data.</li><li>+5 on each day you reach ${S.quota} leads before ${S.deadlineHour}:00 IST.</li><li>+10 when one of your leads becomes a paying client.</li><li>Counted leads are capped at ${S.dailyCap} per day.</li>`;
+  if(r==="sales")return`<li>+1 per qualified pitch (max ${S.pitchCap}/day), +3 per discovery call booked, +25 per paying client confirmed by Vijay.</li><li>−5 for a missed call or an entry proven fake. −15 if a closed deal is cancelled because of a broken promise.</li>`;
+  return`<li>+20 per website delivered and accepted on time, +10 if late.</li><li>−5 per real bug found within 7 days (not scope changes).</li><li>Your target equals Mayank's confirmed deals that week.</li>`;
+}
+window.setType=t=>{
+  E.ctype=t;const f=ROLES[prof.role].types[t].fields;
+  $("ff").innerHTML=f.map(x=>{const id="f_"+x[0],req=x[3]?" *":"";
+    const inp=x[2]==="select"?`<select id="${id}">${x[4].map(o=>`<option>${o}</option>`).join("")}</select>`:x[2]==="textarea"?`<textarea id="${id}" rows="2"></textarea>`:`<input id="${id}" type="${x[2]}">`;
+    return`<label>${esc(x[1])}${req}</label>${inp}`}).join("");
+};
+const tagFor=s=>({wrong:["r","Wrong data"],fake:["r","Flagged fake"],missed:["r","Missed"],cancelled:["r","Cancelled"],confirmed:["g","Confirmed"],accepted:["g","Accepted"],rejected:["r","Rejected"]}[s]||["","Submitted"]);
+function empUpdate(){
+  if(!$("empRoot"))return;
+  const now=Date.now(),wk=weekOf(now),td=istOf(now).date,R=prof.role;
+  $("eb").textContent="⏳ Week of "+wk+" (IST). Results are published at the end of the week. Daily deadline: "+S.deadlineHour+":00 IST.";
+  const we=E.entries.filter(e=>e.week===wk),today=we.filter(e=>e.date===td);
+  $("sT").textContent=today.length;$("sW").textContent=we.length;$("sL").textContent=we.filter(e=>e.hour>=S.deadlineHour).length;
+  if(R==="research"){$("qCard").style.display="";const on=today.filter(e=>e.status!=="wrong"&&e.hour<S.deadlineHour).length;$("qt").textContent=on+" / "+S.quota;$("qb").style.width=Math.min(100,on/S.quota*100)+"%"}
+  $("hist").innerHTML=`<table><thead><tr><th>Time (IST)</th><th>Entry</th><th>Status</th></tr></thead><tbody>${E.entries.sort((a,b)=>b.ms-a.ms).slice(0,12).map(e=>{const t=tagFor(e.status);return`<tr><td>${fmtT(e.ms)}</td><td class="w">${esc(Object.values(e.data).filter(Boolean).join(" · "))}</td><td><span class="tag ${t[0]}">${t[1]}</span></td></tr>`}).join("")}</tbody></table>`;
+  if(E.adjs.length){$("adjCard").style.display="";
+    $("adjs").innerHTML=`<table><thead><tr><th>When</th><th>Points</th><th>Reason</th><th>Dispute</th></tr></thead><tbody>${E.adjs.slice(0,15).map(a=>`<tr><td>${fmtT(a.ms)}</td><td><b>${a.points>0?"+":""}${a.points}</b></td><td class="w">${esc(a.reason)}</td><td class="w">${a.dispute?esc(a.dispute):(now-a.ms<48*36e5?`<button class="sm sec" onclick="dispute('${a.id}')">Dispute</button>`:"—")}</td></tr>`).join("")}</tbody></table>`}
+  const sel=$("resSel");
+  if(E.results.length){
+    if(!E.rw||!E.results.find(r=>r.week===E.rw))E.rw=E.results[0].week;
+    sel.innerHTML=`<select id="rw" onchange="E.rw=this.value;empUpdate()">${E.results.map(r=>`<option value="${r.week}"${r.week===E.rw?" selected":""}>Week of ${r.week}${r.partial?" (in progress)":""}</option>`).join("")}</select>`;
+    $("res").innerHTML=rankHtml(E.results.find(r=>r.week===E.rw).rows,cur.uid);
+  }
+}
+window.E=E;window.empUpdate=empUpdate;
+window.dispute=async id=>{const t=prompt("Why do you disagree with this adjustment?");if(!t||!t.trim())return;try{await updateDoc(doc(db,"adjustments",id),{dispute:t.trim().slice(0,300)})}catch(e){alert("Could not send dispute.")}};
+async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("").slice(0,40)}
+window.submitEntry=async()=>{
+  const t=E.ctype,R=ROLES[prof.role],f=R.types[t].fields,data={},er=$("se");er.className="err";er.textContent="";
+  for(const x of f){const v=$("f_"+x[0]).value.trim();if(x[3]&&!v){er.textContent="Please fill: "+x[1];return}data[x[0]]=v.slice(0,300)}
+  $("sb").disabled=true;
+  try{
+    let keyRef=null;
+    if(prof.role==="research"){
+      keyRef=doc(db,"keys",await sha((data.business+"|"+data.contact).toLowerCase().replace(/[^a-z0-9|]/g,"")));
+      if((await getDoc(keyRef)).exists()){er.textContent="Duplicate: this business was already submitted.";$("sb").disabled=false;return}
+    }
+    await addDoc(collection(db,"entries"),{uid:cur.uid,name:prof.name,role:prof.role,type:t,data:data,ts:serverTimestamp(),status:"submitted",converted:false,bugs:0,deadline:data.deadline||""});
+    if(keyRef)try{await setDoc(keyRef,{by:cur.uid})}catch(e){}
+    f.forEach(x=>{const el=$("f_"+x[0]);el.value=x[2]==="select"?x[4][0]:""});
+    er.className="err good";er.textContent="Submitted ✔";
+  }catch(e){er.textContent="Could not submit. Check your connection and try again."}
+  $("sb").disabled=false;
+};
+
+/* ---------- Admin ---------- */
+let A={users:[],entries:[],adjs:[],results:[],tab:"req",fm:"all",fw:"cur",aw:"cur"};
+function startAdmin(){
+  setTheme("admin");
+  view('<div id="admRoot" class="card"><p>Loading…</p></div>');
+  const rd=()=>drawAdmin();
+  unsubs.push(onSnapshot(collection(db,"users"),s=>{A.users=s.docs.map(d=>Object.assign({id:d.id},d.data()));rd()}));
+  unsubs.push(onSnapshot(query(collection(db,"entries"),orderBy("ts","desc"),limit(1500)),s=>{A.entries=s.docs.map(mapE);rd()}));
+  unsubs.push(onSnapshot(collection(db,"adjustments"),s=>{A.adjs=s.docs.map(mapA).sort((a,b)=>b.ms-a.ms);rd()}));
+  unsubs.push(onSnapshot(collection(db,"results"),s=>{A.results=s.docs.map(d=>d.data());rd()}));
+  unsubs.push(onSnapshot(doc(db,"config","settings"),s=>{if(s.exists())S=Object.assign(JSON.parse(JSON.stringify(DEF)),s.data());rd()}));
+}
+window.setTab=t=>{A.tab=t;drawAdmin(true)};
+window.setF=(k,v)=>{A[k]=v;drawAdmin(true)};
+const approved=()=>A.users.filter(u=>u.status==="approved");
+function drawAdmin(force){
+  const a=document.activeElement;
+  if(!force&&a&&/INPUT|SELECT|TEXTAREA/.test(a.tagName)&&$("admBody")&&$("admBody").contains(a))return;
+  const pend=A.users.filter(u=>u.status==="pending");
+  const tabs=[["req","Requests"+(pend.length?" ("+pend.length+")":"")],["board","Live board"],["review","Review"],["adj","Adjust"],["team","Team"]].map(t=>`<button class="${A.tab===t[0]?"":"sec"}" onclick="setTab('${t[0]}')">${t[1]}</button>`).join("");
+  view(`<div id="admRoot">${head("Admin panel",'<button class="sec" onclick="logout()">Sign out</button>')}<div class="tabs">${tabs}</div><div id="admBody">${adminBody(pend)}</div></div>`);
+}
+function adminBody(pend){
+  const now=Date.now(),cw=weekOf(now),lw=addD(cw,-7);
+  const roleSel=(id,r)=>`<select id="${id}" style="width:auto">${Object.keys(ROLES).map(k=>`<option value="${k}"${k===r?" selected":""}>${ROLES[k].label}</option>`).join("")}</select>`;
+  if(A.tab==="req"){
+    return`<div class="card"><h2>Pending requests</h2>${pend.length?`<div class="scroll"><table><thead><tr><th>Name</th><th>Role</th><th>Action</th></tr></thead><tbody>${pend.map(u=>`<tr><td><b>${esc(u.name)}</b></td><td>${roleSel("r_"+u.id,u.role)}</td><td><button class="ok sm" onclick="setUser('${u.id}','approved')">Approve</button><button class="no sm" onclick="setUser('${u.id}','rejected')">Reject</button></td></tr>`).join("")}</tbody></table></div>`:"<p>No pending requests.</p>"}<p>Approve only names you recognise as your real employees.</p></div>`;
+  }
+  if(A.tab==="board"){
+    const rows=computeRows(cw,A.users,A.entries,A.adjs),ds=[0,1,2,3,4,5,6].map(n=>addD(cw,n));
+    const published=A.results.find(r=>r.week===lw);
+    return`<div class="card"><div class="row"><h2>Live board · week of ${cw}</h2><span style="font-size:.78rem;color:var(--mu)">Employees cannot see this</span></div><div class="scroll"><table><thead><tr><th>Member</th><th>Role</th>${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<th>${d}</th>`).join("")}<th>Late</th><th>Points</th><th>Score</th><th>Last entry</th></tr></thead><tbody>${rows.map(r=>{const es=A.entries.filter(e=>e.uid===r.uid&&e.week===cw),last=es.reduce((m,e)=>Math.max(m,e.ms),0);return`<tr><td><b>${esc(r.name)}</b></td><td>${ROLES[r.role].label}</td>${ds.map(d=>`<td>${es.filter(e=>e.date===d).length}</td>`).join("")}<td>${es.filter(e=>e.hour>=S.deadlineHour).length}</td><td><b>${r.points}</b></td><td>${r.pct==null?"—":r.pct+"%"}</td><td>${last?fmtT(last):"—"}</td></tr>`}).join("")}</tbody></table></div></div>
+    <div class="card"><h2>Publish results</h2><p>${published?"Last week ("+lw+") is already published.":"Last week ("+lw+") is not published yet."} Points update automatically from entries. Developer entries only count once you tap <b>Accept</b> in Review, and closed deals once you tap <b>Confirm</b>. Employees see nothing until you publish.</p><button onclick="publish('${lw}')">${published?"Re-publish":"Publish"} last week</button> <button class="sec" onclick="publish('${cw}')">Publish this week so far</button><div class="err" id="pe"></div></div>`;
+  }
+  if(A.tab==="review"){
+    const mem=approved(),wkSet=A.fw==="cur"?cw:lw;
+    let es=A.entries.filter(e=>e.week===wkSet&&(A.fm==="all"||e.uid===A.fm)).slice(0,200);
+    const btn=(id,k,l,c)=>`<button class="sm ${c||"sec"}" onclick="act('${id}','${k}')">${l}</button>`;
+    const actions=e=>{
+      if(e.type==="lead")return(e.status==="wrong"?btn(e.id,"undo","Undo wrong"):btn(e.id,"wrong","Wrong data (−2)","no"))+btn(e.id,"conv",e.converted?"Unmark converted":"Converted (+10)");
+      if(e.type==="pitch")return e.status==="fake"?btn(e.id,"undo","Undo"):btn(e.id,"fake","Fake (−5)","no");
+      if(e.type==="call_booked")return e.status!=="submitted"?btn(e.id,"undo","Undo"):btn(e.id,"missed","Missed (−5)","no")+btn(e.id,"fake","Fake (−5)","no");
+      if(e.type==="client_closed")return e.status==="submitted"?btn(e.id,"confirm","Confirm (+25)","ok")+btn(e.id,"cancel","Cancelled (−15)","no"):e.status==="confirmed"?btn(e.id,"cancel","Cancelled (−15)","no")+btn(e.id,"undo","Undo"):btn(e.id,"undo","Undo");
+      if(e.type==="site")return(e.status==="accepted"?btn(e.id,"undo","Undo")+btn(e.id,"bug1","+ Bug (−5)","no")+btn(e.id,"bug0","− Bug"):e.status==="submitted"?btn(e.id,"accept","Accept","ok")+btn(e.id,"reject","Reject","no"):btn(e.id,"undo","Undo"))+btn(e.id,"deadline","Deadline");
+      return"";
+    };
+    return`<div class="card"><h2>Review entries</h2><div class="row" style="margin-bottom:10px"><select style="width:auto" onchange="setF('fm',this.value)"><option value="all">All members</option>${mem.map(u=>`<option value="${u.id}"${A.fm===u.id?" selected":""}>${esc(u.name)}</option>`).join("")}</select><select style="width:auto" onchange="setF('fw',this.value)"><option value="cur"${A.fw==="cur"?" selected":""}>This week</option><option value="last"${A.fw==="last"?" selected":""}>Last week</option></select></div><div class="scroll"><table><thead><tr><th>Time (IST)</th><th>Member</th><th>Entry</th><th>Status</th><th>Actions</th></tr></thead><tbody>${es.map(e=>{const t=tagFor(e.status);return`<tr><td>${fmtT(e.ms)}${e.hour>=S.deadlineHour&&e.type==="lead"?' <span class="tag y">late</span>':""}</td><td><b>${esc(e.name)}</b></td><td class="w">${esc(ROLES[e.role]?ROLES[e.role].types[e.type].label+": ":"")}${esc(Object.values(e.data).filter(Boolean).join(" · "))}${e.converted?' <span class="tag g">converted</span>':""}${e.bugs?` <span class="tag r">${e.bugs} bug${e.bugs>1?"s":""}</span>`:""}${e.type==="site"&&e.deadline?` <span class="tag">due ${esc(e.deadline)}</span>`:""}</td><td><span class="tag ${t[0]}">${t[1]}</span></td><td>${actions(e)}</td></tr>`}).join("")}</tbody></table></div>${es.length?"":"<p>No entries.</p>"}</div>`;
+  }
+  if(A.tab==="adj"){
+    const mem=approved();
+    return`<div class="card"><h2>Manual adjustment</h2><p>Use for things like untouched leads, missed follow-ups or bonuses. A written reason is required, and the employee can see it and dispute it.</p><label>Member</label><select id="am">${mem.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join("")}</select><label>Points (use − for a penalty)</label><input id="ap" type="number" step="0.5" placeholder="e.g. -5"><label>Reason</label><textarea id="ar" rows="2"></textarea><label>Applies to week</label><select id="aw"><option value="${cw}">This week (${cw})</option><option value="${lw}">Last week (${lw})</option></select><div style="margin-top:14px"><button onclick="addAdj()">Add adjustment</button></div><div class="err" id="ae2"></div></div>
+    <div class="card"><h2>Recent adjustments</h2><div class="scroll"><table><thead><tr><th>When</th><th>Member</th><th>Pts</th><th>Reason</th><th>Employee dispute</th></tr></thead><tbody>${A.adjs.slice(0,40).map(x=>`<tr><td>${fmtT(x.ms)}</td><td>${esc(x.name)}</td><td>${x.points}</td><td class="w">${esc(x.reason)}</td><td class="w">${x.dispute?'<span class="tag y">disputed</span> '+esc(x.dispute):"—"}</td></tr>`).join("")}</tbody></table></div></div>`;
+  }
+  const us=A.users.slice().sort((a,b)=>a.name.localeCompare(b.name));
+  return`<div class="card"><h2>Team</h2><div class="scroll"><table><thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody>${us.map(u=>`<tr><td><b>${esc(u.name)}</b></td><td>${roleSel("r_"+u.id,u.role)}</td><td><span class="tag ${u.status==="approved"?"g":u.status==="pending"?"y":"r"}">${u.status}</span></td><td>${u.status==="approved"?`<button class="sm sec" onclick="setUser('${u.id}','approved')">Save role</button><button class="no sm" onclick="setUser('${u.id}','rejected')">Revoke</button>`:`<button class="ok sm" onclick="setUser('${u.id}','approved')">Approve</button>`}</td></tr>`).join("")}</tbody></table></div><p style="margin-top:10px">Forgot password? Delete that person's login in Firebase Console → Authentication → Users, then they register again and you approve them.</p></div>
+  <div class="card"><h2>Settings</h2><label>Daily lead quota</label><input id="s_q" type="number" value="${S.quota}"><label>Counted leads cap per day</label><input id="s_c" type="number" value="${S.dailyCap}"><label>Daily deadline (hour, IST, 24h)</label><input id="s_d" type="number" value="${S.deadlineHour}"><label>Max scored pitches per day (sales)</label><input id="s_p" type="number" value="${S.pitchCap}"><label>Weekly target · Lead Research (points)</label><input id="s_tr" type="number" value="${S.targets.research}"><label>Weekly target · Sales (points)</label><input id="s_ts" type="number" value="${S.targets.sales}"><div style="margin-top:14px"><button onclick="saveSettings()">Save settings</button></div><p style="margin-top:10px">Developer target = confirmed deals × 20 points, calculated automatically.</p><div class="err" id="se2"></div></div>`;
+}
+window.setUser=async(id,status)=>{const sel=$("r_"+id);const p={status:status};if(sel)p.role=sel.value;try{await updateDoc(doc(db,"users",id),p)}catch(e){alert("Could not save. Try again.")}};
+window.act=async(id,k)=>{
+  const e=A.entries.find(x=>x.id===id);if(!e)return;
+  const P={wrong:{status:"wrong"},fake:{status:"fake"},missed:{status:"missed"},confirm:{status:"confirmed"},cancel:{status:"cancelled"},accept:{status:"accepted"},reject:{status:"rejected"},undo:{status:"submitted"},conv:{converted:!e.converted},bug1:{bugs:e.bugs+1},bug0:{bugs:Math.max(0,e.bugs-1)}};
+  let p=P[k];
+  if(k==="deadline"){const v=prompt("New deadline (YYYY-MM-DD)",e.deadline);if(!v||!/^\d{4}-\d{2}-\d{2}$/.test(v))return;p={deadline:v}}
+  try{await updateDoc(doc(db,"entries",id),p)}catch(x){alert("Could not save. Try again.")}
+};
+window.addAdj=async()=>{
+  const uid=$("am").value,pts=Number($("ap").value),why=$("ar").value.trim(),er=$("ae2"),u=A.users.find(x=>x.id===uid);
+  if(!uid||!$("ap").value||isNaN(pts)||!why){er.textContent="Choose a member, enter points and a reason.";return}
+  try{await addDoc(collection(db,"adjustments"),{uid:uid,name:u.name,points:pts,reason:why.slice(0,300),week:$("aw").value,ts:serverTimestamp()});$("ap").value="";$("ar").value="";er.className="err good";er.textContent="Added ✔"}
+  catch(e){er.className="err";er.textContent="Could not save."}
+};
+window.saveSettings=async()=>{
+  const n=id=>Number($(id).value),v={quota:n("s_q"),dailyCap:n("s_c"),deadlineHour:n("s_d"),pitchCap:n("s_p"),targets:{research:n("s_tr"),sales:n("s_ts")}};
+  if(Object.values(v).some(x=>typeof x==="number"&&(isNaN(x)||x<=0))||isNaN(v.targets.research)||isNaN(v.targets.sales)||v.deadlineHour>23){$("se2").textContent="Enter valid positive numbers.";return}
+  try{await setDoc(doc(db,"config","settings"),v);$("se2").className="err good";$("se2").textContent="Saved ✔"}catch(e){$("se2").className="err";$("se2").textContent="Could not save."}
+};
+window.publish=async w=>{
+  if(!confirm("Publish results for the week of "+w+"? Employees will see them."))return;
+  try{await setDoc(doc(db,"results",w),{week:w,partial:w===weekOf(Date.now()),rows:computeRows(w,A.users,A.entries,A.adjs),publishedAt:serverTimestamp()});$("pe").className="err good";$("pe").textContent="Published ✔"}
+  catch(e){$("pe").className="err";$("pe").textContent="Could not publish."}
+};
+
+/* ---------- Install as app ---------- */
+if("serviceWorker" in navigator)addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})});
+const APK_URL="https://github.com/luminalearnin/Vanguard/releases/latest/download/Vanguard.apk";
+const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+function updateGetApp(){
+  const el=$("getapp");if(!el)return;
+  const ua=navigator.userAgent;
+  if(isStandalone()||/; wv\)/.test(ua)){el.innerHTML="";return}
+  if(/android/i.test(ua)){el.innerHTML='<a class="apkbtn" href="'+APK_URL+'">Download the Android app</a><p style="margin-top:10px">Tap the downloaded file, then <b>Install</b>. If Android asks, allow installs from this source.</p>';return}
+  el.innerHTML=/iphone|ipad|ipod/i.test(ua)?'<p>Install on iPhone: tap <b>Share</b>, then <b>Add to Home Screen</b>.</p>':"";
+}
+</script>
+</body>
+</html>
