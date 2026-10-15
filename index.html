@@ -127,6 +127,37 @@ body.dk .wrap{position:relative;z-index:1}
 .land .card button.sec{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
 .land .err{color:#ff8a7a}
 .land .cta{background:#fff;color:#05070f;margin-top:22px}
+.land .ls.hero #authCard{width:min(920px,calc(100vw - 44px));max-width:none;padding:0;border:0;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.auth-shell{--auth-blue:#2d83ff;position:relative;display:flex;min-height:390px;overflow:hidden;border:1px solid rgba(177,207,255,.28);border-radius:26px;background:rgba(4,9,22,.78);box-shadow:0 32px 90px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.11);isolation:isolate;transform-style:preserve-3d}
+.auth-shell::after{content:"";position:absolute;z-index:4;top:-18%;bottom:-18%;left:-24%;width:17%;background:linear-gradient(90deg,transparent,rgba(180,218,255,.82),rgba(70,150,255,.45),transparent);filter:blur(5px);transform:skewX(-20deg);opacity:0;pointer-events:none}
+.auth-shell.is-transitioning::after{animation:authBlade .82s cubic-bezier(.72,0,.22,1) both}
+@keyframes authBlade{0%{left:-24%;opacity:0}12%{opacity:.9}82%{opacity:.9}100%{left:112%;opacity:0}}
+.auth-form-side{position:relative;z-index:2;width:56%;padding:34px 42px;text-align:left;display:flex;flex-direction:column;justify-content:center;transition:transform .72s cubic-bezier(.22,.75,.2,1),opacity .45s ease}
+.auth-form-head{margin-bottom:20px}.auth-kicker,.auth-story-kicker{display:block;color:#85b8ff;font-size:.61rem;font-weight:800;letter-spacing:.24em;text-transform:uppercase;margin-bottom:10px}
+.auth-form-side .ctitle{font-family:var(--serif);font-size:clamp(1.35rem,3vw,1.8rem);text-transform:uppercase;letter-spacing:.02em;margin:0 0 6px}
+.auth-form-side p{font-size:.82rem;max-width:390px;margin-bottom:0}
+.auth-fields{display:grid;grid-template-columns:1fr;gap:0}
+.auth-form-side label{margin:12px 0 6px}
+.auth-form-side input,.auth-form-side select{border-radius:10px;padding:12px 13px}
+.auth-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+.land .auth-actions button{min-width:132px}
+.land .auth-actions .sec{min-width:0}
+.auth-story{position:absolute;z-index:1;inset:0 0 0 auto;width:51%;padding:42px 36px 42px 62px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;clip-path:polygon(13% 0,100% 0,100% 100%,0 100%);background:radial-gradient(ellipse at 70% 28%,rgba(63,140,255,.25),transparent 55%),linear-gradient(145deg,rgba(18,43,84,.97),rgba(5,12,30,.98));border-left:1px solid rgba(150,199,255,.22);transition:inset .72s cubic-bezier(.22,.75,.2,1),clip-path .72s cubic-bezier(.22,.75,.2,1),padding .72s cubic-bezier(.22,.75,.2,1)}
+.auth-story::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(91,162,255,.08) 54%,transparent 75%);pointer-events:none}
+.auth-story-kicker{position:relative;color:#a8ceff;letter-spacing:.34em}
+.auth-story h3{position:relative;font-family:var(--serif);font-size:clamp(1.75rem,4vw,2.5rem);font-weight:700;line-height:1.04;max-width:290px;margin:0 0 12px;color:#f5f8ff}
+.auth-story h3 em{color:#8cbbff;font-weight:700}
+.auth-story p{position:relative;max-width:270px;margin:0;color:#bdcce2;font-size:.82rem;line-height:1.6}
+.auth-story-mark{position:absolute;right:26px;bottom:23px;color:rgba(196,220,255,.55);font-family:var(--serif);font-size:.64rem;letter-spacing:.34em}
+.auth-shell.is-register .auth-story{inset:0 auto 0 0;padding:42px 62px 42px 36px;clip-path:polygon(0 0,100% 0,87% 100%,0 100%);background:radial-gradient(ellipse at 30% 28%,rgba(63,140,255,.25),transparent 55%),linear-gradient(215deg,rgba(18,43,84,.97),rgba(5,12,30,.98))}
+.auth-shell.is-register .auth-story-mark{left:26px;right:auto}
+.auth-shell.is-register .auth-form-side{margin-left:auto}
+.auth-shell.is-transitioning .auth-form-side{animation:authFormArrive .68s cubic-bezier(.22,.75,.2,1) both}
+.auth-shell.is-transitioning .auth-story{animation:authStoryArrive .72s cubic-bezier(.22,.75,.2,1) both}
+@keyframes authFormArrive{0%{opacity:.25;transform:translateX(22px) rotateY(-4deg)}100%{opacity:1;transform:translateX(0) rotateY(0)}}
+@keyframes authStoryArrive{0%{filter:brightness(1.45);opacity:.72}100%{filter:brightness(1);opacity:1}}
+@media(max-width:700px){.auth-shell{min-height:0;border-radius:22px}.auth-form-side{width:100%;padding:27px 22px 30px}.auth-story{display:none}.auth-shell.is-register .auth-form-side{margin:0}.auth-shell::after{width:28%}.auth-form-side .ctitle{font-size:1.5rem}.auth-actions{gap:8px}.land .auth-actions button{flex:1 1 auto}.auth-form-side .auth-kicker{margin-bottom:8px}}
+@media(prefers-reduced-motion:reduce){.auth-shell.is-transitioning::after,.auth-shell.is-transitioning .auth-form-side,.auth-shell.is-transitioning .auth-story{animation:none!important}}
 @media(max-width:899px){.ls.r{align-items:flex-start;text-align:left}}
 @media(prefers-reduced-motion:reduce){.rvh{opacity:1;transform:none}}
 
@@ -357,15 +388,18 @@ async function startScene(mode,shape,col){
 
 function authScreen(msg){
   const reg=mode==="register";
-  if(!$("land")){view(landingHTML());document.body.classList.add("dk");revealLand();updateGetApp();document.body.style.setProperty("--acc","#4aa3ff");startScene("land")}
-  $("authCard").innerHTML=`<h2 class="ctitle">${reg?"Request access":"Welcome back"}</h2><p>${reg?"Create your account with your real full name. Vijay approves every account; unrecognised names are declined.":"Sign in with your full name and password."}</p>
-  <label>Full name</label><input id="an" autocomplete="name" placeholder="Enter your full name">
-  <label>Password</label><input id="ap" type="password" autocomplete="${reg?"new-password":"current-password"}" placeholder="At least 6 characters">
-  ${reg?`<label>Confirm password</label><input id="ap2" type="password" autocomplete="new-password"><label>Your role</label><select id="ar">${Object.keys(ROLES).map(k=>`<option value="${k}">${ROLES[k].label}</option>`).join("")}</select>`:""}
-  <div style="margin-top:16px;display:flex;gap:8px"><button id="ab" onclick="${reg?"doRegister()":"doLogin()"}">${reg?"Request access":"Sign in"}</button><button class="sec" onclick="setMode('${reg?"login":"register"}')">${reg?"I have an account":"New here? Register"}</button></div>
-  <div class="err" id="ae">${esc(msg||"")}</div>`;
+  if(!$('land')){view(landingHTML());document.body.classList.add("dk");revealLand();updateGetApp();document.body.style.setProperty("--acc","#4aa3ff");startScene("land")}
+  $('authCard').innerHTML=`<div class="auth-shell${reg?" is-register":""}${msg==="__transition__"?" is-transitioning":""}" id="authShell" data-mode="${reg?"register":"login"}">
+    <div class="auth-form-side"><div class="auth-form-head"><span class="auth-kicker">Vanguard · Team portal</span><h2 class="ctitle">${reg?"Request access":"Welcome back"}</h2><p>${reg?"Create your account with your real full name. Vijay approves every account; unrecognised names are declined.":"Sign in with your full name and password."}</p></div>
+      <div class="auth-fields"><label for="an">Full name</label><input id="an" autocomplete="name" placeholder="Enter your full name">
+      <label for="ap">Password</label><input id="ap" type="password" autocomplete="${reg?"new-password":"current-password"}" placeholder="At least 6 characters">
+      ${reg?`<label for="ap2">Confirm password</label><input id="ap2" type="password" autocomplete="new-password"><label for="ar">Your role</label><select id="ar">${Object.keys(ROLES).map(k=>`<option value="${k}">${ROLES[k].label}</option>`).join("")}</select>`:""}</div>
+      <div class="auth-actions"><button id="ab" onclick="${reg?"doRegister()":"doLogin()"}">${reg?"Request access":"Sign in"}</button><button class="sec" onclick="setMode('${reg?"login":"register"}')">${reg?"I have an account":"New here? Register"}</button></div><div class="err" id="ae">${esc(msg==="__transition__"?"":msg||"")}</div>
+    </div><aside class="auth-story" aria-hidden="true"><span class="auth-story-kicker">Vanguard</span><h3>${reg?"Build your <em>first win.</em>":"Welcome <em>back.</em>"}</h3><p>${reg?"Join the team, choose your role, and turn focused work into results everyone can see.":"Your team, your pipeline, and your next win are right where you left them."}</p><span class="auth-story-mark">LEAD · CLOSE · DELIVER</span></aside>
+  </div>`;
+  if(msg==="__transition__")setTimeout(()=>$("authShell")?.classList.remove("is-transitioning"),900);
 }
-window.setMode=m=>{mode=m;authScreen()};
+window.setMode=m=>{if(m===mode)return;mode=m;authScreen("__transition__")};
 const authErr=e=>{const c=e&&e.code||"";
   if(c==="auth/email-already-in-use")return"This name is already registered. Sign in instead.";
   if(c==="auth/invalid-credential"||c==="auth/wrong-password"||c==="auth/user-not-found"||c==="auth/invalid-login-credentials")return"Incorrect name or password.";
